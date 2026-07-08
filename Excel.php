@@ -453,7 +453,12 @@ class Excel extends Widget
      * @param Worksheet|null $activeSheet
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
-    private function executeColumns(&$models, $columns = [], $headers = [],Worksheet &$activeSheet = null ): void
+    private function executeColumns(
+        &$models,
+        array $columns = [],
+        array $headers = [],
+        ?Worksheet &$activeSheet = null
+    ): void
     {
         if ($activeSheet === null) {
             $activeSheet = $this->activeSheet;
@@ -536,7 +541,7 @@ class Excel extends Widget
                         ->applyFromArray($column['headerStyle']);
                 }
                 if ($this->freezeHeader) {
-                    $activeSheet->freezePaneByColumnAndRow(1, $row + 1);
+                    $activeSheet->freezePane('A' . ($row + 1));
                 }
                 if ($this->autoFilter) {
                     $activeSheet->setAutoFilter('A' . $row . ':' . $col . $row);
