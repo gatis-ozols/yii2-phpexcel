@@ -89,7 +89,7 @@ class TableTdCell
         if($this->url) {
             return Html::a($this->value, $this->url, $this->urlOptions);
         }
-        if ($this->numberDecimals !== false) {
+        if ($this->numberDecimals !== false && $this->value !== '') {
             return number_format(round($this->value, $this->numberDecimals), $this->numberDecimals, '.', '');
         }
         return $this->value;
