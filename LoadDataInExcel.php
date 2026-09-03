@@ -9,12 +9,12 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class LoadDataInExcel
 {
-    /** @var TableNavigator */
-    public $tn;
+    /** @var TableNavigator|null */
+    public ?TableNavigator $tn = null;
 
-    public $colunWidth = [];
+    public array $colunWidth = [];
 
-    public $styleTitle = [
+    public array $styleTitle = [
         'font' => [
             'bold' => true,
             'size' => 14
@@ -24,7 +24,7 @@ class LoadDataInExcel
         ],
     ];
 
-    public $classStyle = [];
+    public array $classStyle = [];
 
     /**
      * LoadDataInExcel constructor.
@@ -38,11 +38,10 @@ class LoadDataInExcel
         $this->sheet = $sheet;
     }
 
-    /** @var Worksheet */
-    public $sheet;
+    public ?Worksheet $sheet = null;
 
 
-    public $thStyle = [
+    public array $thStyle = [
         'font' => [
             'bold' => true
         ],
@@ -64,53 +63,52 @@ class LoadDataInExcel
     {
         $this
             ->sheet
-            ->mergeCellsByColumnAndRow(
+            ->mergeCells([
                 $this->tn->minX,
                 $this->tn->minY,
                 $this->tn->maxX,
                 $this->tn->minY
-            );
+            ]);
 
         $this
             ->sheet
-            ->setCellValueByColumnAndRow(
-                $this->tn->minX,
-                $this->tn->minY,
+            ->setCellValue(
+                [$this->tn->minX, $this->tn->minY],
                 $tableTitle
             );
 
         $this
             ->sheet
-            ->getStyleByColumnAndRow($this->tn->minX, $this->tn->minY)
+            ->getStyle([$this->tn->minX, $this->tn->minY])
             ->applyFromArray($this->styleTitle);
     }
 
     /**
-     * @param TableTdCell $cell
+     * @param TableTdCell|null $cell
      * @throws Exception
      */
-    public function fillCell($cell): void
+    public function fillCell(?TableTdCell $cell): void
     {
         if (!$cell) {
             return;
         }
         if ($cell->colspan !== 1) {
             $this->tn->setColspan($cell->colspan);
-            $this->sheet->mergeCellsByColumnAndRow(
+            $this->sheet->mergeCells([
                 $this->tn->x,
                 $this->tn->y,
                 $this->tn->x + $cell->colspan - 1,
                 $this->tn->y + $cell->rowspan - 1
-            );
+            ]);
         }
         if ($cell->rowspan !== 1) {
             $this->tn->setRowspan($cell->rowspan);
-            $this->sheet->mergeCellsByColumnAndRow(
+            $this->sheet->mergeCells([
                 $this->tn->x,
                 $this->tn->y,
                 $this->tn->x + $cell->colspan - 1,
                 $this->tn->y + $cell->rowspan - 1
-            );
+            ]);
         }
 
         $classStyle = [];
@@ -130,7 +128,7 @@ class LoadDataInExcel
             }
             $this
                 ->sheet
-                ->getStyleByColumnAndRow($this->tn->x, $this->tn->y)
+                ->getStyle([$this->tn->x, $this->tn->y])
                 ->getNumberFormat()
                 ->setFormatCode($numberFormat);
             $classStyle[] = [
@@ -142,9 +140,8 @@ class LoadDataInExcel
 
         $this
             ->sheet
-            ->setCellValueByColumnAndRow(
-                $this->tn->x,
-                $this->tn->y,
+            ->setCellValue(
+                [$this->tn->x,$this->tn->y],
                 $cell->getValueForExcel($this->tn->x, $this->tn->y)
             );
 
@@ -168,12 +165,12 @@ class LoadDataInExcel
             $classStyle = array_merge(...$classStyle);
             $this
                 ->sheet
-                ->getStyleByColumnAndRow(
+                ->getStyle([
                     $this->tn->x,
                     $this->tn->y,
                     $this->tn->x + $cell->colspan - 1,
                     $this->tn->y + $cell->rowspan - 1
-                )
+                ])
                 ->applyFromArray($classStyle);
         }
     }
@@ -190,7 +187,6 @@ class LoadDataInExcel
         end($row);
         $lastKey = key($row);
         reset($row);
-        /** @var TableTdCell $cell */
         foreach ($row as $cellKey => $cell) {
             if ($cell !== null) {
                 $this->fillCell($cell);
